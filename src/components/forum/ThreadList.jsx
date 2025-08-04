@@ -56,10 +56,7 @@ const ThreadList = ({ threads, onSelectThread, onEditThread, onDeleteThread, cur
             )}
           </div>
           <h3 className="text-xl font-bold text-white mb-2 truncate">{thread.title}</h3>
-          <div onClick={() => onSelectThread(thread)}>
-            <h3 className="text-xl font-bold text-white mb-2 truncate">{thread.title}</h3>
-            <p className="text-slate-400 text-sm h-12 overflow-hidden text-ellipsis">{thread.content}</p>
-          </div>
+          <p className="text-slate-400 text-sm h-12 overflow-hidden text-ellipsis">{thread.content}</p>
         </div>
       ))}
     </div>
