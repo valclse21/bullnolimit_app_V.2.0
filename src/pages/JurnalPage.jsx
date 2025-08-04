@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import StatCard from "../components/StatCard";
 import TradeTable from "../components/TradeTable";
 import EquityChart from "../components/EquityChart";
@@ -12,17 +13,78 @@ const JurnalPage = ({
   isLoading,
   handleEdit,
   handleDelete,
-  totalTrades,
-  winningTrades,
-  winRate,
-  currentBalance,
-  accountGrowth,
-  totalProfitUSD,
-  chartData,
 }) => {
+
+  const stats = useMemo(() => {
+    const calculateProfit = (trade) => {
+      if (!trade.pair) return 0; // Guard clause to prevent crash
+
+      const pnlPoints =
+        trade.arahPosisi === "Beli"
+          ? parseFloat(trade.hargaExit) - parseFloat(trade.hargaEntry)
+          : parseFloat(trade.hargaEntry) - parseFloat(trade.hargaExit);
+      const lotSize = parseFloat(trade.lotSize) || 0;
+      const pair = trade.pair.toUpperCase();
+
+      if (['EUR/USD', 'GBP/USD', 'AUD/USD', 'NZD/USD'].some(p => pair.includes(p))) {
+        return pnlPoints * lotSize * 100000;
+      }
+      if (['USD/JPY', 'USD/CAD', 'USD/CHF'].some(p => pair.includes(p))) {
+        const pipValue = (0.01 / parseFloat(trade.hargaExit)) * lotSize * 100000;
+        const pips = pnlPoints / 0.01;
+        return pips * pipValue;
+      }
+      if (pair.includes('XAU/USD') || pair.includes('GOLD')) {
+        return pnlPoints * lotSize * 100;
+      }
+      if (['US30', 'NAS100', 'SPX500', 'GER30'].some(p => pair.includes(p))) {
+        return pnlPoints * lotSize * 1;
+      }
+      return pnlPoints * lotSize * 100000;
+    };
+
+    if (!trades || trades.length === 0) {
+      return {
+        totalTrades: 0,
+        totalProfitUSD: 0,
+        winningTrades: 0,
+        winRate: "0.0",
+        currentBalance: initialCapital,
+        accountGrowth: 0,
+        chartData: [],
+      };
+    }
+
+    const tradesWithPnl = trades.map(trade => ({...trade, pnl: calculateProfit(trade)}));
+    const totalProfitUSD = tradesWithPnl.reduce((acc, trade) => acc + trade.pnl, 0);
+    const winningTrades = tradesWithPnl.filter(trade => trade.pnl > 0).length;
+    const totalTrades = trades.length;
+    const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
+    const currentBalance = initialCapital + totalProfitUSD;
+    const accountGrowth = initialCapital > 0 ? (totalProfitUSD / initialCapital) * 100 : 0;
+
+    const chartData = tradesWithPnl.reduce((acc, trade, index) => {
+      const previousBalance = index === 0 ? initialCapital : acc[index - 1]?.balance || initialCapital;
+      acc.push({ tradeNumber: index + 1, balance: previousBalance + trade.pnl });
+      return acc;
+    }, []);
+
+    return {
+      totalTrades,
+      totalProfitUSD,
+      winningTrades,
+      winRate: winRate.toFixed(1),
+      currentBalance,
+      accountGrowth,
+      chartData,
+    };
+  }, [trades, initialCapital]);
+
   if (!user) {
     return <div>Loading user data...</div>; 
   }
+
+  const { totalTrades, winRate, totalProfitUSD, currentBalance, accountGrowth, chartData } = stats;
 
   return (
     <>
@@ -91,7 +153,6 @@ const JurnalPage = ({
 
       <EquityChart data={chartData} />
     </>
-    
   );
 };
 
