@@ -15,7 +15,7 @@ const JurnalPage = ({
   handleDelete,
 }) => {
 
-  const stats = useMemo(() => {
+  const journalData = useMemo(() => {
     const calculateGrossProfit = (trade) => {
       if (!trade.pair) return 0; // Guard clause
 
@@ -97,8 +97,14 @@ const JurnalPage = ({
     }, []);
 
     return {
-      totalTrades, totalProfitUSD: totalNetProfit, winningTrades,
-      winRate: winRate.toFixed(1), currentBalance, accountGrowth, chartData,
+      totalTrades,
+      totalProfitUSD: totalNetProfit,
+      winningTrades,
+      winRate: winRate.toFixed(1),
+      currentBalance,
+      accountGrowth,
+      chartData,
+      tradesWithPnl,
     };
   }, [trades, initialCapital]);
 
@@ -106,7 +112,7 @@ const JurnalPage = ({
     return <div>Loading user data...</div>; 
   }
 
-  const { totalTrades, winRate, totalProfitUSD, currentBalance, accountGrowth, chartData } = stats;
+
 
   return (
     <>
@@ -144,36 +150,16 @@ const JurnalPage = ({
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
         <StatCard title="Modal Awal" value={initialCapital} isCurrency={true} />
-        <StatCard
-          title="Saldo Saat Ini"
-          value={currentBalance}
-          isCurrency={true}
-        />
-        <StatCard
-          title="Pertumbuhan Akun"
-          value={accountGrowth}
-          isPercentage={true}
-        />
+        <StatCard title="Saldo Saat Ini" value={journalData.currentBalance} isCurrency={true} />
+        <StatCard title="Pertumbuhan Akun" value={journalData.accountGrowth} isPercentage={true} />
+        <StatCard title="Total Trades" value={journalData.totalTrades} />
+        <StatCard title="Win Rate" value={journalData.winRate} isPercentage={true} />
+        <StatCard title="Total P/L (USD)" value={journalData.totalProfitUSD} isCurrency={true} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-8">
-        <StatCard title="Total Trades" value={totalTrades} />
-        <StatCard title="Win Rate" value={`${winRate}%`} />
-        <StatCard
-          title="Total P/L (USD)"
-          value={totalProfitUSD}
-          isCurrency={true}
-        />
-      </div>
+      <TradeTable trades={journalData.tradesWithPnl ? [...journalData.tradesWithPnl].reverse() : []} isLoading={isLoading} onEdit={handleEdit} onDelete={handleDelete} />
 
-      <TradeTable
-        trades={[...trades].reverse()}
-        isLoading={isLoading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
-      <EquityChart data={chartData} />
+      <EquityChart data={journalData.chartData || []} />
     </>
   );
 };
