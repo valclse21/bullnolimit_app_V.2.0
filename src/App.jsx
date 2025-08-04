@@ -136,8 +136,39 @@ function App() {
   };
 
   const stats = useMemo(() => {
-    const contractSize = 100;
-    const totalTrades = trades.length;
+    const calculateProfit = (trade) => {
+      const pnlPoints =
+        trade.arahPosisi === "Beli"
+          ? trade.hargaExit - trade.hargaEntry
+          : trade.hargaEntry - trade.hargaExit;
+      const lotSize = trade.lotSize || 0;
+      const pair = trade.pair.toUpperCase();
+
+      // Kategori 1: Major Pairs (USD as Quote, e.g., EUR/USD)
+      if (['EUR/USD', 'GBP/USD', 'AUD/USD', 'NZD/USD'].some(p => pair.includes(p))) {
+        return pnlPoints * lotSize * 100000; // (exit - entry) * lot * 100,000 units
+      }
+
+      // Kategori 2: Major Pairs (USD as Base, e.g., USD/JPY)
+      if (['USD/JPY', 'USD/CAD', 'USD/CHF'].some(p => pair.includes(p))) {
+        const pipValue = (0.01 / trade.hargaExit) * lotSize * 100000;
+        const pips = pnlPoints / 0.01;
+        return pips * pipValue;
+      }
+
+      // Kategori 4: XAU/USD (Emas)
+      if (pair.includes('XAU/USD') || pair.includes('GOLD')) {
+        return pnlPoints * lotSize * 100; // $1 movement = $100 profit for 1 lot
+      }
+
+      // Kategori 5: Indeks (e.g., US30, NAS100)
+      if (['US30', 'NAS100', 'SPX500', 'GER30'].some(p => pair.includes(p))) {
+        return pnlPoints * lotSize * 1; // 1 point movement = $1 profit for 1 lot/contract
+      }
+
+      // Fallback/Default (mirip Kategori 1, asumsi umum)
+      return pnlPoints * lotSize * 100000;
+    };
 
     if (!trades || trades.length === 0) {
       return {
@@ -151,42 +182,23 @@ function App() {
       };
     }
 
-    const totalProfitUSD = trades.reduce((acc, trade) => {
-      const pnlPoints =
-        trade.arahPosisi === "Beli"
-          ? trade.hargaExit - trade.hargaEntry
-          : trade.hargaEntry - trade.hargaExit;
-      const pnlUSD = pnlPoints * (trade.lotSize || 0) * contractSize;
-      return acc + pnlUSD;
-    }, 0);
+    const tradesWithPnl = trades.map(trade => ({...trade, pnl: calculateProfit(trade)}));
 
-    const winningTrades = trades.filter((trade) => {
-      const pnlPoints =
-        trade.arahPosisi === "Beli"
-          ? trade.hargaExit - trade.hargaEntry
-          : trade.hargaEntry - trade.hargaExit;
-      const pnlUSD = pnlPoints * (trade.lotSize || 0) * contractSize;
-      return pnlUSD > 0;
-    }).length;
-
+    const totalProfitUSD = tradesWithPnl.reduce((acc, trade) => acc + trade.pnl, 0);
+    const winningTrades = tradesWithPnl.filter(trade => trade.pnl > 0).length;
+    const totalTrades = trades.length;
     const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
     const currentBalance = initialCapital + totalProfitUSD;
-    const accountGrowth =
-      initialCapital > 0 ? (totalProfitUSD / initialCapital) * 100 : 0;
+    const accountGrowth = initialCapital > 0 ? (totalProfitUSD / initialCapital) * 100 : 0;
 
-    const chartData = trades.reduce((acc, trade, index) => {
-      const pnlPoints =
-        trade.arahPosisi === "Beli"
-          ? trade.hargaExit - trade.hargaEntry
-          : trade.hargaEntry - trade.hargaExit;
-      const pnlUSD = pnlPoints * (trade.lotSize || 0) * contractSize;
+    const chartData = tradesWithPnl.reduce((acc, trade, index) => {
       const previousBalance =
         index === 0
           ? initialCapital
           : acc[index - 1]?.balance || initialCapital;
       acc.push({
         tradeNumber: index + 1,
-        balance: previousBalance + pnlUSD,
+        balance: previousBalance + trade.pnl,
       });
       return acc;
     }, []);
