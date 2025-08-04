@@ -5,23 +5,21 @@ const StatCard = ({
   isCurrency = false,
   isPercentage = false,
 }) => {
-  const valueClass =
-    typeof value === "number"
-      ? value >= 0
-        ? "text-green-400"
-        : "text-red-400"
-      : "text-slate-200";
+  // Guard clause to ensure value is a valid number
+  const numericValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+
+  const valueClass = numericValue >= 0 ? 'text-green-400' : 'text-red-400';
 
   const formattedValue = isCurrency
-    ? `$${Math.abs(value).toFixed(2)}`
+    ? `$${Math.abs(numericValue).toFixed(2)}`
     : isPercentage
-    ? `${value.toFixed(2)}%`
-    : value;
+    ? `${numericValue.toFixed(2)}%`
+    : numericValue;
 
   const sign =
-    typeof value === "number" && (isCurrency || isPercentage) && value > 0
-      ? "+"
-      : "";
+    typeof numericValue === 'number' && (isCurrency || isPercentage) && numericValue > 0
+      ? '+'
+      : '';
 
   return (
     <div className="bg-slate-800 p-6 rounded-lg shadow-md border border-slate-700">
@@ -38,5 +36,6 @@ const StatCard = ({
     </div>
   );
 };
+
 
 export default StatCard;

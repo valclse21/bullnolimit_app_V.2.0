@@ -54,7 +54,7 @@ function App() {
 
       const capitalRef = doc(db, "capitals", user.uid);
       capitalUnsubscribe = onSnapshot(capitalRef, (docSnap) => {
-        if (docSnap.exists()) {
+        if (docSnap.exists() && typeof docSnap.data().amount === 'number') {
           const capitalAmount = docSnap.data().amount;
           setInitialCapital(capitalAmount);
           setCapitalInput(capitalAmount.toString());
