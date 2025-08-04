@@ -27,14 +27,15 @@ const imageToBase64 = (filePath) => {
 };
 
 export default async function handler(req, res) {
-
+  console.log('[API START] Function handler started.');
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
     const { fields, files } = await parseForm(req);
-    
+    console.log('[API STEP 1] Form parsed successfully.');
+
     const pairName = fields.pairName[0];
     const timeframe = fields.timeframe[0];
     const currentPrice = fields.currentPrice[0];
@@ -43,11 +44,14 @@ export default async function handler(req, res) {
     if (!chartImageFile) {
       return res.status(400).json({ error: 'Screenshot chart tidak ditemukan.' });
     }
+    console.log('[API STEP 2] All form data is present.');
 
     const base64Image = imageToBase64(chartImageFile.filepath);
     const mimeType = chartImageFile.mimetype;
+    console.log('[API STEP 3] Image converted to base64.');
 
     const openrouterApiKey = process.env.OPENROUTER_API_KEY;
+    console.log('[API STEP 4] Reading OPENROUTER_API_KEY. Found:', !!openrouterApiKey);
 
     if (!openrouterApiKey) {
       console.error('SERVER ERROR: OPENROUTER_API_KEY not found.');
