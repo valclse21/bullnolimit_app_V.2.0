@@ -10,14 +10,14 @@ const TradeTableRow = ({ trade, onEdit, onDelete }) => {
 
   return (
     <tr className="border-b border-slate-700 hover:bg-slate-700/50">
-      <td className="py-3 px-4 text-slate-400">
+      <td className="py-3 px-4 text-slate-400 whitespace-nowrap">
         {trade.timestamp?.toDate().toLocaleDateString("id-ID")}
       </td>
       <td className="py-3 px-4 font-medium text-slate-200">{trade.pair}</td>
-      <td className="py-3 px-4 text-slate-400">{trade.arahPosisi}</td>
-      <td className="py-3 px-4 text-slate-400">{trade.lotSize || "-"}</td>
-      <td className="py-3 px-4 text-slate-400">{commission || "-"}</td>
-      <td className="py-3 px-4 text-slate-400">{swap || "-"}</td>
+      <td className="py-3 px-4 text-slate-400 whitespace-nowrap">{trade.arahPosisi}</td>
+      <td className="py-3 px-4 text-slate-400 whitespace-nowrap">{trade.lotSize || "-"}</td>
+      <td className="py-3 px-4 text-slate-400 whitespace-nowrap">{commission || "-"}</td>
+      <td className="py-3 px-4 text-slate-400 whitespace-nowrap">{swap || "-"}</td>
       <td className={`py-3 px-4 font-mono ${pnlClass}`}>
         {pnlSign}${netPnl.toFixed(2)}
       </td>
@@ -48,19 +48,19 @@ const TradeTable = ({ trades, isLoading, onEdit, onDelete }) => {
   }
 
   return (
-    <div className="bg-slate-800 shadow-md rounded-lg overflow-hidden border border-slate-700">
+    <div className="bg-slate-800 shadow-md rounded-lg border border-slate-700 overflow-x-auto">
       <table className="w-full text-sm text-left text-slate-400">
         <thead className="text-xs text-slate-300 uppercase bg-slate-700/50">
           <tr>
-            <th scope="col" className="py-3 px-4">Tanggal</th>
-            <th scope="col" className="py-3 px-4">Pair</th>
-            <th scope="col" className="py-3 px-4">Posisi</th>
-            <th scope="col" className="py-3 px-4">Ukuran</th>
-            <th scope="col" className="py-3 px-4">Komisi</th>
-            <th scope="col" className="py-3 px-4">Swap</th>
-            <th scope="col" className="py-3 px-4">P/L Bersih</th>
-            <th scope="col" className="py-3 px-4">Catatan</th>
-            <th scope="col" className="py-3 px-4">Aksi</th>
+            <th scope="col" className="py-3 px-4 whitespace-nowrap">Tanggal</th>
+            <th scope="col" className="py-3 px-4 whitespace-nowrap">Pair</th>
+            <th scope="col" className="py-3 px-4 whitespace-nowrap">Posisi</th>
+            <th scope="col" className="py-3 px-4 whitespace-nowrap">Ukuran</th>
+            <th scope="col" className="py-3 px-4 whitespace-nowrap">Komisi</th>
+            <th scope="col" className="py-3 px-4 whitespace-nowrap">Swap</th>
+            <th scope="col" className="py-3 px-4 whitespace-nowrap">P/L Bersih</th>
+            <th scope="col" className="py-3 px-4 whitespace-nowrap">Catatan</th>
+            <th scope="col" className="py-3 px-4 whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-700">
