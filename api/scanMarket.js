@@ -47,7 +47,14 @@ export default async function handler(req, res) {
     const base64Image = imageToBase64(chartImageFile.filepath);
     const mimeType = chartImageFile.mimetype;
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const openrouterApiKey = process.env.OPENROUTER_API_KEY;
+
+    if (!openrouterApiKey) {
+      console.error('SERVER ERROR: OPENROUTER_API_KEY not found.');
+      return res.status(500).json({ error: 'Konfigurasi Kunci API di server Vercel belum benar. Mohon periksa kembali Environment Variables.' });
+    }
+
+    const apiKey = openrouterApiKey;
     if (!apiKey) {
       return res.status(500).json({ error: 'Kunci API tidak dikonfigurasi.' });
     }
