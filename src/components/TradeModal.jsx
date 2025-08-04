@@ -9,11 +9,13 @@ import {
 } from "firebase/firestore";
 
 const TradeModal = ({ isOpen, onClose, editingTrade, userId }) => {
-  const [aset, setAset] = useState("");
+  const [pair, setPair] = useState("");
   const [arahPosisi, setArahPosisi] = useState("Beli");
   const [hargaEntry, setHargaEntry] = useState("");
   const [hargaExit, setHargaExit] = useState("");
   const [lotSize, setLotSize] = useState("");
+  const [commission, setCommission] = useState("");
+  const [swap, setSwap] = useState("");
   const [catatan, setCatatan] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -21,18 +23,22 @@ const TradeModal = ({ isOpen, onClose, editingTrade, userId }) => {
 
   useEffect(() => {
     if (isEditMode && editingTrade) {
-      setAset(editingTrade.aset);
+      setPair(editingTrade.pair);
       setArahPosisi(editingTrade.arahPosisi);
       setHargaEntry(editingTrade.hargaEntry);
       setHargaExit(editingTrade.hargaExit);
       setLotSize(editingTrade.lotSize || "");
+      setCommission(editingTrade.commission || "");
+      setSwap(editingTrade.swap || "");
       setCatatan(editingTrade.catatan);
     } else {
-      setAset("");
+      setPair("");
       setArahPosisi("Beli");
       setHargaEntry("");
       setHargaExit("");
       setLotSize("");
+      setCommission("");
+      setSwap("");
       setCatatan("");
     }
   }, [editingTrade, isEditMode, isOpen]);
@@ -48,11 +54,13 @@ const TradeModal = ({ isOpen, onClose, editingTrade, userId }) => {
     setIsSubmitting(true);
 
     const tradeData = {
-      aset,
+      pair,
       arahPosisi,
       hargaEntry: parseFloat(hargaEntry),
       hargaExit: parseFloat(hargaExit),
       lotSize: parseFloat(lotSize),
+      commission: parseFloat(commission) || 0,
+      swap: parseFloat(swap) || 0,
       catatan,
     };
 
@@ -90,16 +98,17 @@ const TradeModal = ({ isOpen, onClose, editingTrade, userId }) => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label
-                  htmlFor="aset"
+                  htmlFor="pair"
                   className="block text-sm font-medium text-slate-400"
                 >
-                  Aset
+                  Pair
                 </label>
                 <input
                   type="text"
-                  id="aset"
-                  value={aset}
-                  onChange={(e) => setAset(e.target.value)}
+                  id="pair"
+                  value={pair}
+                  onChange={(e) => setPair(e.target.value)}
+                  placeholder="e.g., EUR/USD"
                   className="mt-1 block w-full bg-slate-700 border-slate-600 text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
@@ -172,6 +181,42 @@ const TradeModal = ({ isOpen, onClose, editingTrade, userId }) => {
                   onChange={(e) => setHargaExit(e.target.value)}
                   className="mt-1 block w-full bg-slate-700 border-slate-600 text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="commission"
+                  className="block text-sm font-medium text-slate-400"
+                >
+                  Komisi (USD)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="commission"
+                  value={commission}
+                  onChange={(e) => setCommission(e.target.value)}
+                  placeholder="Opsional"
+                  className="mt-1 block w-full bg-slate-700 border-slate-600 text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="swap"
+                  className="block text-sm font-medium text-slate-400"
+                >
+                  Swap (USD)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="swap"
+                  value={swap}
+                  onChange={(e) => setSwap(e.target.value)}
+                  placeholder="Opsional"
+                  className="mt-1 block w-full bg-slate-700 border-slate-600 text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>

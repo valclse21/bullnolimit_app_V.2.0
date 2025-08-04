@@ -1,26 +1,25 @@
 const TradeTableRow = ({ trade, onEdit, onDelete }) => {
-  const contractSize = 100;
+  // P/L kotor (dari pergerakan harga) sudah dihitung di JurnalPage
+  const grossPnl = trade.pnl || 0;
+  const commission = trade.commission || 0;
+  const swap = trade.swap || 0;
+  const netPnl = grossPnl - commission - swap;
 
-  const pnlPoints =
-    trade.arahPosisi === "Beli"
-      ? trade.hargaExit - trade.hargaEntry
-      : trade.hargaEntry - trade.hargaExit;
-
-  const pnlUSD = pnlPoints * (trade.lotSize || 0) * contractSize;
-
-  const pnlClass = pnlUSD >= 0 ? "text-green-500" : "text-red-500";
-  const pnlSign = pnlUSD >= 0 ? "+" : "";
+  const pnlClass = netPnl >= 0 ? "text-green-500" : "text-red-500";
+  const pnlSign = netPnl >= 0 ? "+" : "";
 
   return (
     <tr className="border-b border-slate-700 hover:bg-slate-700/50">
       <td className="py-3 px-4 text-slate-400">
         {trade.timestamp?.toDate().toLocaleDateString("id-ID")}
       </td>
-      <td className="py-3 px-4 font-medium text-slate-200">{trade.aset}</td>
+      <td className="py-3 px-4 font-medium text-slate-200">{trade.pair}</td>
       <td className="py-3 px-4 text-slate-400">{trade.arahPosisi}</td>
       <td className="py-3 px-4 text-slate-400">{trade.lotSize || "-"}</td>
+      <td className="py-3 px-4 text-slate-400">{commission || "-"}</td>
+      <td className="py-3 px-4 text-slate-400">{swap || "-"}</td>
       <td className={`py-3 px-4 font-mono ${pnlClass}`}>
-        {pnlSign}${pnlUSD.toFixed(2)}
+        {pnlSign}${netPnl.toFixed(2)}
       </td>
       <td className="py-3 px-4 text-slate-500 text-sm">{trade.catatan}</td>
       <td className="py-3 px-4">
@@ -53,27 +52,15 @@ const TradeTable = ({ trades, isLoading, onEdit, onDelete }) => {
       <table className="w-full text-sm text-left text-slate-400">
         <thead className="text-xs text-slate-300 uppercase bg-slate-700/50">
           <tr>
-            <th scope="col" className="py-3 px-4">
-              Tanggal
-            </th>
-            <th scope="col" className="py-3 px-4">
-              Aset
-            </th>
-            <th scope="col" className="py-3 px-4">
-              Posisi
-            </th>
-            <th scope="col" className="py-3 px-4">
-              Ukuran
-            </th>
-            <th scope="col" className="py-3 px-4">
-              P/L (USD)
-            </th>
-            <th scope="col" className="py-3 px-4">
-              Catatan
-            </th>
-            <th scope="col" className="py-3 px-4">
-              Aksi
-            </th>
+            <th scope="col" className="py-3 px-4">Tanggal</th>
+            <th scope="col" className="py-3 px-4">Pair</th>
+            <th scope="col" className="py-3 px-4">Posisi</th>
+            <th scope="col" className="py-3 px-4">Ukuran</th>
+            <th scope="col" className="py-3 px-4">Komisi</th>
+            <th scope="col" className="py-3 px-4">Swap</th>
+            <th scope="col" className="py-3 px-4">P/L Bersih</th>
+            <th scope="col" className="py-3 px-4">Catatan</th>
+            <th scope="col" className="py-3 px-4">Aksi</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-700">
@@ -88,7 +75,7 @@ const TradeTable = ({ trades, isLoading, onEdit, onDelete }) => {
             ))
           ) : (
             <tr>
-              <td colSpan="7" className="text-center py-10 text-slate-500">
+              <td colSpan="9" className="text-center py-10 text-slate-500">
                 Belum ada data trade.
               </td>
             </tr>
