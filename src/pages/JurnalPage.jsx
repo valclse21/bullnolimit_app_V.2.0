@@ -88,7 +88,7 @@ const JurnalPage = ({
     const totalTrades = trades.length;
     const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
     const currentBalance = initialCapital + totalNetProfit;
-    const accountGrowth = initialCapital > 0 ? (totalNetProfit / initialCapital) * 100 : 0;
+    const accountGrowth = initialCapital && initialCapital > 0 ? (totalNetProfit / initialCapital) * 100 : 0;
 
     const chartData = tradesWithPnl.reduce((acc, trade, index) => {
       const previousBalance = index === 0 ? initialCapital : acc[index - 1]?.balance || initialCapital;
