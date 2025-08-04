@@ -33,7 +33,7 @@ const AiScannerForm = ({ onScan, isLoading }) => {
 
   return (
     <div className="bg-slate-800/50 p-6 rounded-lg border border-slate-700 mb-8">
-      <h2 class="text-xl font-bold text-white mb-4">AI Chart Analyst</h2>
+      <h2 className="text-xl font-bold text-white mb-4">Analisis Chart dengan AI</h2>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
