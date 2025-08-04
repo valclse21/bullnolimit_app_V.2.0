@@ -100,7 +100,7 @@ const JurnalPage = ({
       totalTrades,
       totalProfitUSD: totalNetProfit,
       winningTrades,
-      winRate: winRate.toFixed(1),
+      winRate: winRate,
       currentBalance,
       accountGrowth,
       chartData,
