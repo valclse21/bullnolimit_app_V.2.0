@@ -9,113 +9,94 @@ export const config = {
   },
 };
 
-// Fungsi bantuan untuk mem-parsing form data
-const parseForm = (req) => {
-  return new Promise((resolve, reject) => {
-    const form = new Formidable();
-    form.parse(req, (err, fields, files) => {
-      if (err) reject(err);
-      else resolve({ fields, files });
-    });
-  });
-};
-
-// Fungsi bantuan untuk mengubah gambar menjadi Base64
+// Fungsi untuk mengubah gambar menjadi base64
 const imageToBase64 = (filePath) => {
   const fileBuffer = fs.readFileSync(filePath);
   return fileBuffer.toString('base64');
 };
 
+// Fungsi bantuan untuk mem-parsing form data
+const parseForm = (req) => {
+  return new Promise((resolve, reject) => {
+    const form = new Formidable();
+    form.parse(req, (err, fields, files) => {
+      if (err) return reject(err);
+      resolve([fields, files]);
+    });
+  });
+};
+
+// Fungsi untuk membuat prompt berdasarkan data input
+const createPrompt = (pairName, timeframe, currentPrice) => {
+  return `
+    Anda adalah AI Analis Chart Teknikal. Tugas Anda adalah menganalisis gambar chart yang diberikan dan menghasilkan "Technical Analysis Report" dalam format JSON yang ketat.
+
+    Data yang diketahui:
+    - Pair: ${pairName}
+    - Timeframe: ${timeframe}
+    - Harga Saat Ini: ${currentPrice}
+
+    Berdasarkan gambar chart, buatlah laporan dengan struktur JSON berikut. Isi semua nilai berdasarkan analisis Anda terhadap gambar.
+    - "tradingParameters": Sebuah objek dengan "entryZone", "takeProfit1", "takeProfit2", "stopLoss".
+    - "trendAnalysis": String ("Bearish", "Bullish", atau "Neutral").
+    - "keyMetrics": Sebuah objek dengan "chartPattern", "riskLevel", "priceTarget".
+    - "keyPriceLevels": Sebuah objek dengan array "support" dan array "resistance". Setiap array berisi angka.
+    - "tradingStrategy": Sebuah string yang merangkum strategi trading yang disarankan.
+
+    Berikan HANYA objek JSON tunggal sebagai respons tanpa teks atau format markdown lain.
+  `;
+};
+
 export default async function handler(req, res) {
-  console.log('[API START] Function handler started.');
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    const { fields, files } = await parseForm(req);
-    console.log('[API STEP 1] Form parsed successfully.');
+    const [fields, files] = await parseForm(req);
 
-    const pairName = fields.pairName[0];
-    const timeframe = fields.timeframe[0];
-    const currentPrice = fields.currentPrice[0];
-    const chartImageFile = files.chartImage[0];
+    const pairName = fields.pairName?.[0];
+    const timeframe = fields.timeframe?.[0];
+    const currentPrice = fields.currentPrice?.[0];
+    const chartImageFile = files.chartImage?.[0];
 
-    if (!chartImageFile) {
-      return res.status(400).json({ error: 'Screenshot chart tidak ditemukan.' });
+    if (!pairName || !timeframe || !currentPrice || !chartImageFile) {
+      return res.status(400).json({ error: 'Data tidak lengkap.' });
     }
-    console.log('[API STEP 2] All form data is present.');
 
     const base64Image = imageToBase64(chartImageFile.filepath);
     const mimeType = chartImageFile.mimetype;
-    console.log('[API STEP 3] Image converted to base64.');
+    const apiKey = process.env.OPENROUTER_API_KEY;
 
-    const openrouterApiKey = process.env.OPENROUTER_API_KEY;
-    console.log('[API STEP 4] Reading OPENROUTER_API_KEY. Found:', !!openrouterApiKey);
-
-    if (!openrouterApiKey) {
-      console.error('SERVER ERROR: OPENROUTER_API_KEY not found.');
-      return res.status(500).json({ error: 'Konfigurasi Kunci API di server Vercel belum benar. Mohon periksa kembali Environment Variables.' });
-    }
-
-    const apiKey = openrouterApiKey;
     if (!apiKey) {
-      return res.status(500).json({ error: 'Kunci API tidak dikonfigurasi.' });
+      console.error('SERVER ERROR: OPENROUTER_API_KEY is missing in Vercel environment.');
+      return res.status(500).json({ error: 'Kunci API untuk layanan AI tidak ditemukan di konfigurasi server.' });
     }
 
-    const prompt = `
-      Anda adalah AI Analis Chart Teknikal. Tugas Anda adalah menganalisis gambar chart yang diberikan dan menghasilkan "Technical Analysis Report" dalam format JSON yang ketat.
+    const prompt = createPrompt(pairName, timeframe, currentPrice);
 
-      Data yang diketahui:
-      - Pair: ${pairName}
-      - Timeframe: ${timeframe}
-      - Harga Saat Ini: ${currentPrice}
-
-      Berdasarkan gambar chart, buatlah laporan dengan struktur JSON berikut. Isi semua nilai berdasarkan analisis Anda terhadap gambar.
-      - "tradingParameters": Sebuah objek dengan "entryZone", "takeProfit1", "takeProfit2", "stopLoss".
-      - "trendAnalysis": String ("Bearish", "Bullish", atau "Neutral").
-      - "keyMetrics": Sebuah objek dengan "chartPattern", "riskLevel", "priceTarget".
-      - "keyPriceLevels": Sebuah objek dengan array "support" dan array "resistance". Setiap array berisi angka.
-      - "tradingStrategy": Sebuah string yang merangkum strategi trading yang disarankan.
-
-      Berikan HANYA objek JSON tunggal sebagai respons tanpa teks atau format markdown lain.
-    `;
-
-    const response = await axios.post(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        model: "google/gemini-flash-1.5", // Model ini mendukung input gambar
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: prompt,
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:${mimeType};base64,${base64Image}`,
-                },
-              },
-            ],
-          },
-        ],
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+      model: 'google/gemini-flash-1.5',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } },
+          ],
+        },
+      ],
+    }, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
       },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    });
 
     const resultText = response.data.choices[0].message.content;
     const cleanedJsonString = resultText.replace(/```json\n|```/g, '').trim();
     const jsonResponse = JSON.parse(cleanedJsonString);
 
-    // Gabungkan dengan data awal untuk header laporan
     const finalReport = {
       pairName,
       timeframe,
@@ -123,13 +104,18 @@ export default async function handler(req, res) {
       ...jsonResponse
     };
 
-    res.status(200).json(finalReport);
+    return res.status(200).json(finalReport);
 
   } catch (error) {
-    console.error('Error di /api/scanMarket:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Terjadi kesalahan internal pada server.' });
-    console.error("Error calling OpenRouter API:", error.response ? error.response.data : error.message);
-    response.setHeader('Access-Control-Allow-Origin', '*');
-    return response.status(500).json({ error: "Gagal menghubungi layanan AI." });
+    if (error.response) {
+      // Error dari panggilan API (misal: 401, 429, dll)
+      console.error('API Error:', error.response.data);
+      const errorMessage = error.response.data?.error?.message || 'Gagal menghubungi layanan AI.';
+      return res.status(500).json({ error: `Analisis Gagal: ${errorMessage}` });
+    } else {
+      // Error lain (parsing, network, dll)
+      console.error('Server Error:', error.message);
+      return res.status(500).json({ error: 'Terjadi kesalahan tak terduga di server.' });
+    }
   }
 };
