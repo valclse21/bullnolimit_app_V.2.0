@@ -4,13 +4,13 @@ import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAV2AJOQNzFvRFTUcEroIHM75W-Pzb4uaM",
-  authDomain: "jutrade-app.firebaseapp.com",
-  projectId: "jutrade-app",
-  storageBucket: "jutrade-app.appspot.com",
-  messagingSenderId: "371407940306",
-  appId: "1:371407940306:web:cba28f031d8faf5d869b0b",
-  measurementId: "G-EVMLGJZBRJ",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
