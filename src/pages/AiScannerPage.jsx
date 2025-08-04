@@ -31,6 +31,7 @@ const AiScannerPage = () => {
 
   return (
     <div className="text-white">
+      <h1 className="text-2xl font-bold text-white mb-4">MGC AI Analis</h1>
       <AiScannerForm onScan={handleScan} isLoading={isLoading} />
       <AiScannerResults report={report} isLoading={isLoading} error={error} />
     </div>
