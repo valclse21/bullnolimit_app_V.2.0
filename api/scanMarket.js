@@ -36,12 +36,26 @@ const createPrompt = (pairName, timeframe, currentPrice) => {
     - Timeframe: ${timeframe}
     - Harga Saat Ini: ${currentPrice}
 
-    Berdasarkan gambar chart, buatlah laporan dengan struktur JSON berikut. Isi semua nilai berdasarkan analisis Anda terhadap gambar.
-    - "tradingParameters": Sebuah objek dengan "entryZone", "takeProfit1", "takeProfit2", "stopLoss".
+    **ATURAN WAJIB DAN KETAT:**
+    1.  **Jika strategi adalah "BUY" (Beli/Long):**
+        *   `takeProfit1` dan `takeProfit2` HARUS LEBIH TINGGI dari `entryZone`.
+        *   `stopLoss` HARUS LEBIH RENDAH dari `entryZone`.
+    2.  **Jika strategi adalah "SELL" (Jual/Short):**
+        *   `takeProfit1` dan `takeProfit2` HARUS LEBIH RENDAH dari `entryZone`.
+        *   `stopLoss` HARUS LEBIH TINGGI dari `entryZone`.
+    3.  Pastikan `tradingStrategy` konsisten dengan `trendAnalysis`:
+        *   Jika tren "Bearish", strategi harus "SELL".
+        *   Jika tren "Bullish", strategi harus "BUY".
+        *   Jika tren "Neutral", strategi harus menyarankan untuk "menunggu konfirmasi" atau "trading dalam rentang (range)".
+
+    Berdasarkan gambar chart dan ATURAN DI ATAS, buatlah laporan dengan struktur JSON berikut. Isi semua nilai berdasarkan analisis Anda.
+    
+    **Struktur JSON:**
+    - "tradingParameters": Sebuah objek dengan "entryZone", "takeProfit1", "takeProfit2", "stopLoss". Semua nilai harus berupa angka.
     - "trendAnalysis": String ("Bearish", "Bullish", atau "Neutral").
-    - "keyMetrics": Sebuah objek dengan "chartPattern", "riskLevel", "priceTarget".
+    - "keyMetrics": Sebuah objek dengan "chartPattern", "riskLevel" (Low, Medium, High), "priceTarget".
     - "keyPriceLevels": Sebuah objek dengan array "support" dan array "resistance". Setiap array berisi angka.
-    - "tradingStrategy": Sebuah string yang merangkum strategi trading yang disarankan.
+    - "tradingStrategy": Sebuah string yang merangkum strategi trading yang disarankan dan harus secara eksplisit menyebutkan "strategi BUY" atau "strategi SELL".
 
     Berikan HANYA objek JSON tunggal sebagai respons tanpa teks atau format markdown lain.
   `;
