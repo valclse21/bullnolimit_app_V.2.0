@@ -36,17 +36,10 @@ const createPrompt = (pairName, timeframe, currentPrice) => {
     - Timeframe: ${timeframe}
     - Harga Saat Ini: ${currentPrice}
 
-    **ATURAN WAJIB DAN KETAT:**
-    1.  **Jika strategi adalah "BUY" (Beli/Long):**
-        *   `takeProfit1` dan `takeProfit2` HARUS LEBIH TINGGI dari `entryZone`.
-        *   `stopLoss` HARUS LEBIH RENDAH dari `entryZone`.
-    2.  **Jika strategi adalah "SELL" (Jual/Short):**
-        *   `takeProfit1` dan `takeProfit2` HARUS LEBIH RENDAH dari `entryZone`.
-        *   `stopLoss` HARUS LEBIH TINGGI dari `entryZone`.
-    3.  Pastikan `tradingStrategy` konsisten dengan `trendAnalysis`:
-        *   Jika tren "Bearish", strategi harus "SELL".
-        *   Jika tren "Bullish", strategi harus "BUY".
-        *   Jika tren "Neutral", strategi harus menyarankan untuk "menunggu konfirmasi" atau "trading dalam rentang (range)".
+    PERATURAN PENTING:
+    - Aturan 1: Jika strategi adalah BUY, maka Take Profit harus di atas Entry, dan Stop Loss harus di bawah Entry.
+    - Aturan 2: Jika strategi adalah SELL, maka Take Profit harus di bawah Entry, dan Stop Loss harus di atas Entry.
+    - Aturan 3: Strategi harus konsisten dengan Analisis Tren. Jika tren Bearish, strategi adalah SELL. Jika Bullish, strategi adalah BUY. Jika Neutral, sarankan untuk menunggu.
 
     Berdasarkan gambar chart dan ATURAN DI ATAS, buatlah laporan dengan struktur JSON berikut. Isi semua nilai berdasarkan analisis Anda.
     
